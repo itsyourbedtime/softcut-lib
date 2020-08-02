@@ -103,8 +103,6 @@ void SubHead::poke(float in, float pre, float rec) {
         return;
     }
 
-    BOOST_ASSERT_MSG(fade_ >= 0.f && fade_ <= 1.f, "bad fade coefficient in poke()");
-
     preFade_ = pre + (1.f-pre) * fadeCurves->getPreFadeValue(fade_);
     recFade_ = rec * fadeCurves->getRecFadeValue(fade_);
 
@@ -149,7 +147,6 @@ float SubHead::peek4() {
 
 unsigned int SubHead::wrapBufIndex(int x) {
     x += bufFrames_;
-    BOOST_ASSERT_MSG(x >= 0, "buffer index before masking is non-negative");
     return x & bufMask_;
 }
 
@@ -172,12 +169,12 @@ void SubHead::setBuffer(float *buf, unsigned int frames) {
     buf_  = buf;
     bufFrames_ = frames;
     bufMask_ = frames - 1;
-    BOOST_ASSERT_MSG((bufFrames_ != 0) && !(bufFrames_ & bufMask_), "buffer size is not 2^N");
+    assert((bufFrames_ != 0) && !(bufFrames_ & bufMask_));
 }
 
 void SubHead::setRate(rate_t rate) {
     rate_ = rate;
-    inc_dir_ = boost::math::sign(rate);
+    inc_dir_ = rate < 0.f ? -1.f : 1.f;
     // NB: resampler doesn't handle negative rates.
     // instead we copy the resampler output backwards into the buffer when rate < 0.
     resamp_.setRate(std::fabs(rate));
